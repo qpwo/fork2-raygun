@@ -27,14 +27,28 @@ _install_shaderc_
 
 # ----------------------------------------------------------------------------------------------------------------------
 function _install_physx_() {
-# https://github.com/NVIDIA-Omniverse/PhysX/blob/main/physx/documentation/platformreadme/linux/README_LINUX.md
+# https://github.com/NVIDIA-Omniverse/PhysX/blob/107.0-physx-5.6.0/physx/documentation/platformreadme/linux/README_LINUX.md
 
-git clone https://github.com/NVIDIA-Omniverse/PhysX/ ~/git/PhysX
-cd ~/git/PhysX/physx
+# git clone https://github.com/NVIDIA-Omniverse/PhysX/ ~/git/physx
+# cd ~/git/physx/physx
+# git checkout 107.0-physx-5.6.0
+# ./generate_projects.sh
+# # linux-gcc
+# 7
+# cd ~/git/physx/physx/compiler/linux-gcc-release
+# make
+# # gets segmentation fault every time!!
+
+# https://github.com/NVIDIAGameWorks/PhysX/blob/4.1/physx/documentation/platformreadme/linux/readme_linux.html
+git clone --depth 1 https://github.com/NVIDIAGameWorks/PhysX  ~/git/physx4
+cd ~/git/physx4/physx
 ./generate_projects.sh
-# linux-clang  option
-cd ~/git/PhysX/physx/compiler/linux-clang-checked
-make
+# linux
+3
+cd ~/git/physx4/physx/compiler/linux-release
+sudo apt-get install -y libxxf86vm-dev
+
+make -j8
 }
 _install_physx_
 # ----------------------------------------------------------------------------------------------------------------------
@@ -50,14 +64,12 @@ sudo apt-get install libassimp-dev
 sudo apt-get install libopenal-dev
 sudo apt-get install libogg-dev
 sudo apt install ninja-build pkg-config libassimp-dev libglfw3-dev libopenal-dev libogg-dev libopus-dev libopusfile-dev
-cd ~/git
-
+cd ~/git/Raygun
+trash -v build
+cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DPhysX_ROOT=$HOME/git/physx4 -B build
+cd /home/l/git/Raygun && ninja -C build 2>&1 | tee build.log
+# ninja -C build
+cd example
 }
 _install_raygun_
 # ----------------------------------------------------------------------------------------------------------------------
-
-
-
-
-# cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DPhysX_ROOT=$HOME/git/PhysX -B build
-# ninja -C build
