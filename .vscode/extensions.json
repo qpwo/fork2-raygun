@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+      "editorconfig.editorconfig",
+      "majicdave.vscode-shaderc",
+      "slevesque.shader",
+      "xaver.clang-format"
+    ],
+    "unwantedRecommendations": []
+  }
