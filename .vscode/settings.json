@@ -5,5 +5,13 @@
   "[cpp]": {
     "editor.defaultFormatter": "xaver.clang-format"
   },
-  "shaderc-lint.glslcArgs": "--target-env=vulkan1.2"
+  "shaderc-lint.glslcArgs": "--target-env=vulkan1.2",
+  "workbench.colorCustomizations": {
+    "/home/l/tmp/mytheme.jsonc": {},
+    "activityBar.background": "#561332",
+    "titleBar.activeBackground": "#781A46",
+    "titleBar.activeForeground": "#FEFCFD",
+    "statusBar.background": "#781A46",
+    "statusBar.foreground": "#FEFCFD"
+  }
 }
