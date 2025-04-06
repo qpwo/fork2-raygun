@@ -13,7 +13,12 @@ rm CMakeCache.txt
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release ..
 ninja
 ctest # optional
-
+./glslc/glslc --version
+echo 'export PATH="/home/l/git/shaderc/build/glslc:$PATH"' >> ~/.bashrc
+echo 'export PATH="/home/l/git/shaderc/build/glslc:$PATH"' >> ~/.zshrc
+exec zsh
+which glslc
+glslc --version
 }
 _install_shaderc_
 # ----------------------------------------------------------------------------------------------------------------------
