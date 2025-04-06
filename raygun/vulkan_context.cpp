@@ -27,6 +27,10 @@
 #include "raygun/logging.hpp"
 #include "raygun/raygun.hpp"
 
+#if defined(__linux__) || defined(__APPLE__)
+#include <dlfcn.h>
+#endif
+
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 namespace raygun {
@@ -75,12 +79,32 @@ VulkanContext::~VulkanContext()
 
 void VulkanContext::setupInstance()
 {
-    const std::vector<const char*> layers = {
+    // Check which validation layers are available
+    std::vector<const char*> layers;
 #ifndef NDEBUG
-        "VK_LAYER_KHRONOS_validation",
+    // Modern validation layer
+    layers.push_back("VK_LAYER_KHRONOS_validation");
 #endif
-        "VK_LAYER_LUNARG_monitor",
-    };
+    // Only add monitor layer if validation works - it's optional and may not be available
+    if (!layers.empty()) {
+        try {
+            auto availableLayers = vk::enumerateInstanceLayerProperties();
+            bool monitorLayerFound = false;
+            for (const auto& layer : availableLayers) {
+                if (strcmp("VK_LAYER_LUNARG_monitor", layer.layerName) == 0) {
+                    monitorLayerFound = true;
+                    break;
+                }
+            }
+            if (monitorLayerFound) {
+                layers.push_back("VK_LAYER_LUNARG_monitor");
+            }
+        } catch (...) {
+            // Just skip adding monitor layer if we can't query
+        }
+    } else {
+        RAYGUN_WARN("No validation layers enabled - running without validation");
+    }
 
     std::vector<const char*> extensions = {
 #ifndef NDEBUG
@@ -107,8 +131,32 @@ void VulkanContext::setupInstance()
     info.setPpEnabledExtensionNames(extensions.data());
     info.setPApplicationInfo(&appInfo);
 
-    // New Vulkan API loads differently
-    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetInstanceProcAddr;
+    // Initialize Vulkan dynamic dispatcher manually
+    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = nullptr;
+    
+    // Load Vulkan library and get the proc address
+#if defined(__linux__)
+    void* vulkanLib = dlopen("libvulkan.so.1", RTLD_NOW | RTLD_LOCAL);
+    if (!vulkanLib) {
+        vulkanLib = dlopen("libvulkan.so", RTLD_NOW | RTLD_LOCAL);
+    }
+    if (vulkanLib) {
+        vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(dlsym(vulkanLib, "vkGetInstanceProcAddr"));
+    } else {
+        RAYGUN_WARN("Failed to load Vulkan library - make sure Vulkan runtime is installed");
+    }
+#elif defined(_WIN32)
+    HMODULE vulkanLib = LoadLibraryA("vulkan-1.dll");
+    if (vulkanLib) {
+        vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(GetProcAddress(vulkanLib, "vkGetInstanceProcAddr"));
+    } else {
+        RAYGUN_WARN("Failed to load vulkan-1.dll - make sure Vulkan runtime is installed");
+    }
+#endif
+
+    if (!vkGetInstanceProcAddr) {
+        RAYGUN_FATAL("Failed to load Vulkan library or get vkGetInstanceProcAddr");
+    }
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
     instance = vk::createInstanceUnique(info);

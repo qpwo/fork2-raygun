@@ -69,7 +69,7 @@ trash -v build
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DPhysX_ROOT=$HOME/git/physx4 -B build
 cd /home/l/git/Raygun && ninja -C build 2>&1 | tee build.log
 # ninja -C build
-cd example
+./build/example/example
 }
 _install_raygun_
 # ----------------------------------------------------------------------------------------------------------------------
