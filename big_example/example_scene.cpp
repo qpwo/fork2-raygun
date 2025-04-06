@@ -25,6 +25,10 @@ ExampleScene::ExampleScene()
     RAYGUN_INFO("ExampleScene: Adding level to scene root");
     root->addChild(level);
 
+    // Add random objects
+    RAYGUN_INFO("ExampleScene: Creating random obstacles");
+    m_obstacles = std::make_unique<Obstacles>(root.get(), NUM_OBSTACLES);
+
     // setup ball
     RAYGUN_INFO("ExampleScene: Creating ball entity");
     m_ball = std::make_shared<Ball>();

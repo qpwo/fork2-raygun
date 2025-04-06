@@ -4,6 +4,7 @@
 #include "raygun/ui/ui.hpp"
 
 #include "ball.hpp"
+#include "obstacles.hpp"
 
 class ExampleScene : public raygun::Scene {
   public:
@@ -14,8 +15,10 @@ class ExampleScene : public raygun::Scene {
 
   private:
     static constexpr raygun::vec3 CAMERA_OFFSET = {5.0f, 10.0f, 10.0f};
+    static constexpr int NUM_OBSTACLES = 20;
 
     std::shared_ptr<Ball> m_ball;
+    std::unique_ptr<Obstacles> m_obstacles;
 
     std::unique_ptr<raygun::ui::Factory> m_uiFactory;
     std::shared_ptr<raygun::ui::Window> m_menu;
