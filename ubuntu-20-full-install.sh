@@ -57,8 +57,8 @@ _install_physx_
 # ----------------------------------------------------------------------------------------------------------------------
 function _install_raygun_() {
 
-# git clone https://github.com/W4RH4WK/Raygun ~/git/Raygun
-git clone https://github.com/qpwo/fork-raygun ~/git/Raygun
+git clone https://github.com/W4RH4WK/Raygun ~/git/Raygun
+# git clone https://github.com/qpwo/fork2-raygun ~/git/Raygun
 code Raygun
 sudo apt-get install libassimp-dev
 sudo apt-get install libopenal-dev
