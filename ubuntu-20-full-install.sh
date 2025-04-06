@@ -14,8 +14,8 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ..
 ninja
 ctest # optional
 ./glslc/glslc --version
-echo 'export PATH="/home/l/git/shaderc/build/glslc:$PATH"' >> ~/.bashrc
-echo 'export PATH="/home/l/git/shaderc/build/glslc:$PATH"' >> ~/.zshrc
+echo 'export PATH="$HOME/git/shaderc/build/glslc:$PATH"' >> ~/.bashrc
+echo 'export PATH="$HOME/git/shaderc/build/glslc:$PATH"' >> ~/.zshrc
 exec zsh
 which glslc
 glslc --version
@@ -67,7 +67,7 @@ sudo apt install ninja-build pkg-config libassimp-dev libglfw3-dev libopenal-dev
 cd ~/git/Raygun
 trash -v build
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DPhysX_ROOT=$HOME/git/physx4 -B build
-cd /home/l/git/Raygun && ninja -C build 2>&1 | tee build.log
+cd $HOME/git/Raygun && ninja -C build 2>&1 | tee build.log
 # ninja -C build
 ./build/example/example
 }
