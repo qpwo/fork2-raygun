@@ -15,7 +15,7 @@ class ExampleScene : public raygun::Scene {
 
   private:
     static constexpr raygun::vec3 CAMERA_OFFSET = {5.0f, 10.0f, 10.0f};
-    static constexpr int NUM_OBSTACLES = 20;
+    static constexpr int NUM_OBSTACLES = 40;
 
     std::shared_ptr<Ball> m_ball;
     std::unique_ptr<Obstacles> m_obstacles;

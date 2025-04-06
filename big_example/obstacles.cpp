@@ -22,7 +22,8 @@ void Obstacles::createRandomObstacle(raygun::Entity* parent, int index)
     std::uniform_real_distribution<float> distY(AREA_Y_MIN, AREA_Y_MAX);
     std::uniform_real_distribution<float> distZ(AREA_Z_MIN, AREA_Z_MAX);
     std::uniform_real_distribution<float> distSize(MIN_SIZE, MAX_SIZE);
-    std::uniform_int_distribution<int> distType(0, 1);
+    // 70% chance of cube, 30% chance of sphere
+    std::discrete_distribution<int> distType({70, 30});
     
     const bool isCube = distType(m_generator) == 0;
     const std::string name = isCube ? "Cube" : "Sphere";
@@ -38,8 +39,8 @@ void Obstacles::createRandomObstacle(raygun::Entity* parent, int index)
     
     // Create cube or sphere
     if (isCube) {
-        // For cubes, load a ball entity but will use a different shape for physics
-        auto cubeEntity = RG().resourceManager().loadEntity("ball");
+        // Load the cube model
+        auto cubeEntity = RG().resourceManager().loadEntity("cube");
         
         if (!cubeEntity->children().empty()) {
             entity->model = std::move(cubeEntity->children().at(0)->model);
@@ -86,8 +87,8 @@ void Obstacles::createRandomObstacle(raygun::Entity* parent, int index)
     auto* actor = entity->physicsActor.get();
     if (actor && actor->is<PxRigidDynamic>()) {
         auto* rigidBody = static_cast<PxRigidDynamic*>(actor);
-        // Set mass proportional to size
-        float mass = 10.0f * (size * size * size);
+        // Set mass proportional to size, with cubes being heavier than spheres
+        float mass = isCube ? 20.0f * (size * size * size) : 10.0f * (size * size * size);
         PxRigidBodyExt::updateMassAndInertia(*rigidBody, mass);
     }
     
