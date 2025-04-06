@@ -46,6 +46,7 @@ target_include_directories(raygun PUBLIC .)
 target_link_libraries(raygun PUBLIC
     Threads::Threads
     ${CMAKE_DL_LIBS}
+    dl
 
     Vulkan::Vulkan
 

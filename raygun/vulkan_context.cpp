@@ -107,41 +107,46 @@ void VulkanContext::setupInstance()
     info.setPpEnabledExtensionNames(extensions.data());
     info.setPApplicationInfo(&appInfo);
 
-    vk::DynamicLoader dynamicLoader;
-    auto vkGetInstanceProcAddr = dynamicLoader.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
+    // New Vulkan API loads differently
+    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetInstanceProcAddr;
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
     instance = vk::createInstanceUnique(info);
     VULKAN_HPP_DEFAULT_DISPATCHER.init(*instance);
 }
 
+// Callback function must be global or static for proper type conversion
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+    VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    void* pUserData) 
+{
+    auto vulkanLogger = static_cast<spdlog::logger*>(pUserData);
+
+    switch(severity) {
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+        vulkanLogger->trace("{}", pCallbackData->pMessage);
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+        vulkanLogger->info("{}", pCallbackData->pMessage);
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        vulkanLogger->warn("{}", pCallbackData->pMessage);
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+        vulkanLogger->error("{}", pCallbackData->pMessage);
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
+        // This shouldn't happen in practice
+        break;
+    }
+
+    return VK_FALSE;
+}
+
 void VulkanContext::setupDebug()
 {
-    const auto cb = [](VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT* data,
-                       void* userData) -> VkBool32 {
-        auto vulkanLogger = static_cast<spdlog::logger*>(userData);
-
-        switch(severity) {
-        case VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-            vulkanLogger->trace("{}", data->pMessage);
-            break;
-        case VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-            vulkanLogger->info("{}", data->pMessage);
-            break;
-        case VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-            vulkanLogger->warn("{}", data->pMessage);
-            break;
-        case VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-            vulkanLogger->error("{}", data->pMessage);
-            break;
-        case VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
-            RAYGUN_FATAL("unreachable");
-            break;
-        }
-
-        return false;
-    };
-
     m_logger = g_logger->clone("Vulkan");
 
     auto severity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
@@ -154,7 +159,7 @@ void VulkanContext::setupDebug()
     vk::DebugUtilsMessengerCreateInfoEXT info = {};
     info.setMessageSeverity(severity);
     info.setMessageType(type);
-    info.setPfnUserCallback(cb);
+    info.setPfnUserCallback(debugCallback);
     info.setPUserData(m_logger.get());
 
     debugMessenger = instance->createDebugUtilsMessengerEXTUnique(info);
