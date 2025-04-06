@@ -47,8 +47,8 @@ cd ~/git/physx4/physx
 3
 cd ~/git/physx4/physx/compiler/linux-release
 sudo apt-get install -y libxxf86vm-dev
-
-make -j8
+code Makefile
+make # -j8
 }
 _install_physx_
 # ----------------------------------------------------------------------------------------------------------------------
